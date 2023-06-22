@@ -1,0 +1,469 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  LatestAmiId:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
+    
+  SNSTopicEndpoint:
+    Type: String
+    Default: aungswanhtet@outlook.com
+          
+Resources:
+
+
+  ####################################################################################################################
+  #                                                                                                                  #
+  #                                  1.NetworkResources                                                              #
+  #                VPC, PubSub1/2, PriSub1/2, IGW,  IGWAtt, NatGw, NatPubIp,                                         #
+  #    PubRT1/2, PriRT1/2, PubRoute1/2, PrivateRoute1/2, PubSubRouteAsso1/2, PriSubRouteAsso1,2                      #
+  #                                                                                                                  #
+  ####################################################################################################################
+  
+  
+  VPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: 172.31.0.0/16
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-VPC"
+
+  PublicSubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select
+        - '0'
+        - !GetAZs ''
+      CidrBlock: 172.31.1.0/24
+      MapPublicIpOnLaunch: true
+
+  PublicSubnet2:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select
+        - '1'
+        - !GetAZs ''
+      CidrBlock: 172.31.3.0/24
+      MapPublicIpOnLaunch: true
+
+  PrivateSubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select
+        - '0'
+        - !GetAZs ''
+      CidrBlock: 172.31.2.0/24
+      MapPublicIpOnLaunch: false
+
+  PrivateSubnet2:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select
+        - '1'
+        - !GetAZs ''
+      CidrBlock: 172.31.4.0/24
+      MapPublicIpOnLaunch: false
+
+  IGW:
+    Type: 'AWS::EC2::InternetGateway'
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-InternetGateway"
+
+  IGWAttach:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref IGW
+
+  NatGateway:
+    Type: 'AWS::EC2::NatGateway'
+    DependsOn: NatPublicIP
+    Properties:
+      AllocationId: !GetAtt NatPublicIP.AllocationId
+      SubnetId: !Ref PublicSubnet1
+
+  NatPublicIP:
+    Type: 'AWS::EC2::EIP'
+    DependsOn: VPC
+    Properties:
+      Domain: vpc
+
+  PublicRouteTable1:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-Public-RouteTable1"
+
+  PublicRouteTable2:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-Public-RouteTable2"
+
+  PublicRoute1:
+    Type: 'AWS::EC2::Route'
+    DependsOn:
+      - IGW
+      - IGWAttach
+    Properties:
+      RouteTableId: !Ref PublicRouteTable1
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref IGW
+
+  PublicRoute2:
+    Type: 'AWS::EC2::Route'
+    DependsOn:
+      - IGW
+      - IGWAttach
+    Properties:
+      RouteTableId: !Ref PublicRouteTable2
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref IGW
+
+  PublicSubnet1RouteTableAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PublicSubnet1
+      RouteTableId: !Ref PublicRouteTable1
+
+  PublicSubnet2RouteTableAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PublicSubnet2
+      RouteTableId: !Ref PublicRouteTable2
+
+  PrivateRouteTable1:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref VPC
+
+  PrivateRouteTable2:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref VPC
+
+  PrivateRoute1:
+    Type: 'AWS::EC2::Route'
+    DependsOn: IGW
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable1
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway
+
+  PrivateRoute2:
+    Type: 'AWS::EC2::Route'
+    DependsOn: IGW
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable2
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway
+
+  PrivateSubnet1RouteTableAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PrivateSubnet1
+      RouteTableId: !Ref PrivateRouteTable1
+
+  PrivateSubnet2RouteTableAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PrivateSubnet2
+      RouteTableId: !Ref PrivateRouteTable2
+
+
+
+
+  ########################################################################################################
+  #                                                                                                      #
+  #                      2.LoadBalancer<ALBSecGp, ALB, ALBTargetGp, ALBListener>                         #
+  #                                                                                                      #
+  ########################################################################################################
+
+
+
+  ALBSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Allow http, https from the Internet.
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: '0.0.0.0/0'
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: '0.0.0.0/0'
+      Tags:
+        - Key: Name
+          Value: !Join [ "-", [ !Ref AWS::StackName, "ALBSecurityGroup"]]
+        - Key: ApplicationResources
+          Value: "AutoScalingLab"
+
+  ALB:
+    Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
+    Properties:
+      SecurityGroups: [!Ref ALBSecurityGroup]
+      Subnets:
+        - !Ref PublicSubnet1
+        - !Ref PublicSubnet2
+      Tags:
+        - Key: Name
+          Value: !Join [ "-", [ !Ref AWS::StackName, "ApplicationLoadBalancer"]]
+        - Key: ApplicationResources
+          Value: "AutoScalingLab"
+      LoadBalancerAttributes:
+        - Key: idle_timeout.timeout_seconds # Adjusting the idle timeout can be useful for controlling the length of time idle connections are kept open before being closed by the ALB
+          Value: 30
+      Scheme: internet-facing # IGW will not require!
+
+  ALBTargetGroup:
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Properties:
+      TargetType: instance
+      HealthCheckEnabled: True
+      HealthCheckIntervalSeconds: 60
+      HealthCheckPath: /
+      HealthCheckPort: 80 # sets the port on which the health check requests are made.
+      HealthCheckProtocol: HTTP # defines the protocol used for health checks.
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 3
+      UnhealthyThresholdCount: 5
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: 0 # meaning that targets are deregistered immediately upon detection of an unhealthy status.
+      VpcId: !Ref VPC
+      Port: 80 # Specifies the port on which the targets receive traffic from the load balancer.
+      Protocol: HTTP
+      Tags:
+        - Key: Name
+          Value: !Join [ "-", [ !Ref AWS::StackName, "ALBTargetGroup"]]
+        - Key: ApplicationResources
+          Value: "AutoScalingLab"
+
+  ALBListener:
+    Type: 'AWS::ElasticLoadBalancingV2::Listener'
+    Properties:
+      LoadBalancerArn: !Ref ALB
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:
+        - Type: forward #  indicates that the action is to forward the requests to a target group.
+          TargetGroupArn: !Ref ALBTargetGroup
+
+
+
+
+
+  ########################################################################################################
+  #                                                                                                      #
+  #                                                3.AutoScaling                                         #
+  #                                                                                                      #
+  ########################################################################################################
+  
+  SNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: AutoScalingSNSTopic
+      Subscription:
+        - Endpoint: !Ref SNSTopicEndpoint
+          Protocol: email  
+  
+  MyAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      TargetGroupARNs:
+        - !Ref ALBTargetGroup
+      VPCZoneIdentifier:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+      AvailabilityZones:
+        - !Select [0, !GetAZs '']
+        - !Select [1, !GetAZs '']
+      LaunchConfigurationName: !Ref LaunchConfiguration
+      MinSize: 2
+      MaxSize: 4
+      DesiredCapacity: 2
+      NotificationConfigurations:
+        - TopicARN: !Ref SNSTopic
+          NotificationTypes:
+            - "autoscaling:EC2_INSTANCE_LAUNCH"
+            - "autoscaling:EC2_INSTANCE_TERMINATE"
+            - "autoscaling:EC2_INSTANCE_LAUNCH_ERROR"
+            - "autoscaling:EC2_INSTANCE_TERMINATE_ERROR"
+      Tags:
+        - Key: Name
+          Value: !Join [ "-", [ !Ref AWS::StackName, "XAutoScalingGroup"]]
+          PropagateAtLaunch: true # any tags you define on the ASG will automatically propagate to instances launched by the ASG, allowing you to apply consistent tags to all instances within the ASG.
+  
+  EC2InstanceSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Allow ssh, https, http, icmp.
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0  # Adjust the CIDR IP range to restrict SSH access if needed.
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: icmp
+          FromPort: -1
+          ToPort: -1
+          CidrIp: 0.0.0.0/0
+
+  LaunchConfiguration:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      ImageId: !Ref LatestAmiId
+      InstanceType: t2.micro
+      KeyName: xmarkkey
+      SecurityGroups:
+        - !Ref EC2InstanceSecurityGroup
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          echo "*/5 * * * * root /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/etc/cloudwatch-config.json" >> /etc/cron.d/cloudwatch-agent
+          curl -O https://s3.amazonaws.com/amazoncloudwatch-agent/amazon_linux/amd64/latest/amazon-cloudwatch-agent.rpm
+          rpm -U ./amazon-cloudwatch-agent.rpm
+          rm -f ./amazon-cloudwatch-agent.rpm
+          cat <<EOF > /etc/cloudwatch-config.json
+          {
+            "agent": {
+              "metrics_collection_interval": 60,
+              "run_as_user": "root"
+            },
+            "metrics": {
+              "append_dimensions": {
+                "AutoScalingGroupName": "\$${!aws:AutoScalingGroupName}",
+                "ImageId": "\$${!aws:ImageId}",
+                "InstanceId": "\$${!aws:InstanceId}",
+                "InstanceType": "\$${!aws:InstanceType}"
+              },
+              "metrics_collected": {
+                "mem_used_percent": {
+                  "measurement": [
+                    "mem_used_percent"
+                  ],
+                  "metrics_collection_interval": 60
+                }
+              }
+            }
+          }
+          EOF
+          systemctl restart amazon-cloudwatch-agent
+          
+          
+          
+          
+  ########################################################################################################
+  #                                                                                                      #
+  #                       4.AutoScaling Policy<ScaleUp, ScaleDown, MemUti, CPUUti>                       #
+  #                                                                                                      #
+  ########################################################################################################
+  
+  
+  
+  MyScaleUpPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AutoScalingGroupName: !Ref MyAutoScalingGroup
+      PolicyType: SimpleScaling
+      AdjustmentType: ChangeInCapacity
+      ScalingAdjustment: 1
+      Cooldown: 300
+
+  MyScaleDownPolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AutoScalingGroupName: !Ref MyAutoScalingGroup
+      PolicyType: SimpleScaling
+      AdjustmentType: ChangeInCapacity
+      ScalingAdjustment: -1
+      Cooldown: 300
+      
+  MyMemoryUtilizationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: MemoryUtilizationHigh
+      AlarmDescription: Scale up if memory utilization is high
+      MetricName: mem_used_percent
+      Namespace: System/Linux
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 80
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      AlarmActions:
+        - Ref: MyScaleUpPolicy
+
+
+  MyMemoryUtilizationAlarm2:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: MemoryUtilizationLow
+      AlarmDescription: Scale down if memory utilization is high
+      MetricName: mem_used_percent
+      Namespace: System/Linux
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 40
+      ComparisonOperator: LessThanOrEqualToThreshold
+      AlarmActions:
+        - Ref: MyScaleDownPolicy
+
+  CPUUtilizationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: CPUUtilizationHigh
+      AlarmDescription: Scale up if CPU utilization is high
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 90
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      AlarmActions:
+        - Ref: MyScaleUpPolicy
+        
+  CPUUtilizationAlarm2:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: CPUUtilizationLow
+      AlarmDescription: Scale down if CPU utilization is low
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 50
+      ComparisonOperator: LessThanOrEqualToThreshold
+      AlarmActions:
+        - Ref: MyScaleDownPolicy
+
+
+Outputs:
+  LoadBalancerDNSName:
+    Description: DNS name of the Application Load Balancer
+    Value: !GetAtt ALB.DNSName

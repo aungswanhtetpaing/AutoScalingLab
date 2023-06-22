@@ -1,0 +1,33 @@
+Scaling Policies: 
+Auto Scaling groups allow you to define scaling policies to automatically adjust the number of instances based on certain conditions. Scaling policies can be based on metrics such as CPU utilization, memory utilization, network traffic, or custom metrics.
+
+
+Launch Configuration/Launch Template: 
+A launch configuration or launch template defines the configuration parameters for the instances launched by the Auto Scaling group. It includes details such as the Amazon Machine Image (AMI), instance type, security groups, and user data.
+
+
+Desired Capacity: 
+The desired capacity specifies the desired number of instances to be maintained by the Auto Scaling group. Auto Scaling adjusts the number of instances to match the desired capacity based on scaling policies and conditions.
+
+
+Minimum and Maximum Size: 
+The minimum and maximum size specify the minimum and maximum number of instances that the Auto Scaling group can scale to. These values define the scaling boundaries for the group.
+
+
+Cooldown Period: 
+The cooldown period is the time interval between the scaling activities of the Auto Scaling group. During the cooldown period, Auto Scaling will not launch or terminate additional instances to allow time for the newly launched instances to stabilize or for load to decrease.
+
+
+Instance Health Checks: 
+Auto Scaling regularly performs health checks on the instances to determine their health status. The health check can be based on EC2 status checks, ELB health checks, or custom health checks.
+
+
+Lifecycle Hooks: 
+Lifecycle hooks provide a mechanism to perform custom actions when instances are launched or terminated by the Auto Scaling group. You can use lifecycle hooks to pause the instance during the launch or termination process and perform actions such as software installations or configurations.
+
+Tags: 
+Tags are key-value pairs that can be assigned to instances launched by the Auto Scaling group. Tags can be used for identification, organization, and resource management purposes.
+
+
+Notifications: 
+Auto Scaling can send notifications to SNS (Simple Notification Service) topics for events such as instance launches, terminations, or scaling activities. These notifications can be used to track the state of the Auto Scaling group and take appropriate actions.

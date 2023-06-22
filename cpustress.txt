@@ -1,0 +1,84 @@
+#!/bin/bash
+
+# Calculate the amount of memory to stress (in kilobytes)
+memory_to_stress=$((1024 * 1024))  # 1 GB
+
+# Allocate memory using an array
+stress_array=()
+for ((i = 0; i < memory_to_stress / 4; i++)); do
+  stress_array+=(0)
+done
+
+# Print the memory utilization
+free -h
+
+# Start the stress test
+echo "Starting memory stress test..."
+while true; do
+  for element in "${stress_array[@]}"; do
+    element=$((element + 1))
+  done
+done
+
+
+----------------------------------------
+
+#!/bin/bash
+
+# Function for cpu stress
+cpu_stress() {
+ 
+  mem_total=$(grep MemTotal /proc/meminfo | awk '{print $2}')
+  cpu_stress=$(($mem_total * 9 / 10)) 
+
+  
+  stress_array=()
+  for ((i = 0; i < cpu_stress / 4; i++)); do
+    stress_array+=(0)
+  done
+
+  while true; do
+    for element in "${stress_array[@]}"; do
+      element=$((element + 1))
+    done
+  done
+}
+
+# Print the memory utilization
+free -h
+
+# Start the memory stress test
+echo "Starting cpu stress test..."
+cpu_stress
+
+################# kill -9 PID
+-------------------------------
+
+#!/bin/bash
+
+# Install stress-ng
+sudo yum install -y stress-ng
+
+# Stress the CPU
+stress-ng --cpu 0 --cpu-load 100 --timeout 60s
+
+---------------------------
+
+#!/bin/bash
+
+# Function for memory stress
+memory_stress() {
+  # Calculate the available memory (in kilobytes)
+  mem_total=$(grep MemTotal /proc/meminfo | awk '{print $2}')
+  mem_stress=$(($mem_total - 1024))  # Use all available memory except 1MB
+
+  # Allocate memory using stress-ng
+  stress-ng --vm-bytes "${mem_stress}K" --vm-keep -m 1
+}
+
+# Print the memory utilization
+free -h
+
+# Start the memory stress test
+echo "Starting memory stress test..."
+memory_stress
