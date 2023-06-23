@@ -1,0 +1,51 @@
+#!/bin/bash
+
+# Function for cpu stress
+cpu_stress() {
+ 
+  mem_total=$(grep MemTotal /proc/meminfo | awk '{print $2}')
+  cpu_stress=$(($mem_total * 9 / 10)) 
+
+  
+  stress_array=()
+  for ((i = 0; i < cpu_stress / 4; i++)); do
+    stress_array+=(0)
+  done
+
+  while true; do
+    for element in "${stress_array[@]}"; do
+      element=$((element + 1))
+    done
+  done
+}
+
+# Print the memory utilization
+free -h
+
+# Start the memory stress test
+echo "Starting cpu stress test..."
+cpu_stress
+
+
+
+
+--------------------------------------
+Kill process
+
+################# kill -9 PID
+-------------------------------
+
+Useful commands
+
+sudo yum install -y htop
+sudo htop
+vmstat -s
+
+
+stress --cpu 4 --timeout 60s
+
+stress --vm 2 --vm-bytes 1G --timeout 60s
+
+stress --io 4 --timeout 60s
+
+stress --cpu 8 --io 4 --vm 2 --timeout 300s

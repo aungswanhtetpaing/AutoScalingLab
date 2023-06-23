@@ -1,0 +1,9 @@
+SimpleScalilng:  adding or removing a fixed number of instances when specific conditions are met.
+
+TargetTrackingScaling: This policy type allows you to specify a target value for a predefined metric, such as CPU utilization, network throughput, or request count per instance. Auto Scaling automatically adjusts the capacity of the group to maintain the specified metric at the target value.
+
+StepScaling: This policy type defines a set of scaling adjustments based on different scaling intervals or steps. Each step specifies a range of metric values and the corresponding scaling adjustment to apply when the metric falls within that range. Step scaling policies are useful when you want more granular control over the scaling behavior.
+
+    ScheduledAction: This policy type enables you to define scaling actions based on a pre-defined schedule. You can specify the capacity you want to set at a specific time and day of the week. This type of policy is suitable for workload patterns that follow a predictable schedule, such as regular daily or weekly peaks.
+
+    TargetTrackingScaling with predefined metric: In addition to specifying custom metrics, AWS Auto Scaling also provides predefined metrics like ALBRequestCountPerTarget, AppStreamAverageCapacityUtilization, DynamoDBReadCapacityUtilization, DynamoDBWriteCapacityUtilization, EC2SpotFleetRequestAverageCPUUtilization, etc. You can use these predefined metrics with TargetTrackingScaling policies to automate the scaling based on specific service metrics.
