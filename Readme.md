@@ -43,37 +43,37 @@ As I set my ALB to internet-facing, it will have a public IP address or public D
 
 1. It is the Design of my Lab shown by Designer.
 
-![1 TemplateDesign](https://github.com/aungswanhtetpaing/AutoScalingLab/assets/135700688/9a6de146-25ee-40f1-9cbd-711bd73c5596)
+![Image](./ProjectScreenshots/1.TemplateDesign.png)
 
 ---
 2. I will use CloudFormation to upload the configuration file and create a stack.
 
-![2](https://github.com/aungswanhtetpaing/AutoScalingLab/assets/135700688/26565072-128e-498b-a004-2ba353364e06)
+![Image](./ProjectScreenshots/2.png)
 
 ---
 3. SNS email is sent when AutoscalingGroup launches Instances.
 
-![3](https://github.com/aungswanhtetpaing/AutoScalingLab/assets/135700688/ac63733f-a377-4647-adc4-6f61e5ff5445)
+![Image](./ProjectScreenshots/3.png)
 
 ---
 4. Stack Creation is completed.
 
-![4](https://github.com/aungswanhtetpaing/AutoScalingLab/assets/135700688/4d258f41-b62f-439f-94dc-b6c9d776d094)
+![Image](./ProjectScreenshots/4.png)
 
 ---
 5. Bastion Host is manually created and it is used to ssh into EC2 instances and test load.
 
-![5](https://github.com/aungswanhtetpaing/AutoScalingLab/assets/135700688/7b927a13-f10c-48ce-9398-6235f72118c5)
+![Image](./ProjectScreenshots/5.png)
 
 ---
 6. SSH into the Host with public IP address and key pair.
 
-![6](https://github.com/aungswanhtetpaing/AutoScalingLab/assets/135700688/76490d5a-2283-432b-a1ce-072bf4c30b5c)
+![Image](./ProjectScreenshots/6.png)
 
 ---
 7. CloudWatch Alarm section has 4 alarms. As there is no load on EC2, CPUUtilizationLow is in alarm. But the instances are at minimum capacity and there will be no changes occurring.
 
-![7](https://github.com/aungswanhtetpaing/AutoScalingLab/assets/135700688/49ea79b9-486f-48ab-a92e-89d54d7b0064)
+![Image](./ProjectScreenshots/7.png)
 
 ---
 
@@ -81,35 +81,34 @@ As I set my ALB to internet-facing, it will have a public IP address or public D
 
 1. There is Low CPU utilization shown in CloudWatch.
 
-![8 1](https://github.com/aungswanhtetpaing/AutoScalingLab/assets/135700688/d6ac8c8d-14b4-4458-a1f1-1fec27cd6e4a)
+![Image](./ProjectScreenshots/8.1.png)
 
 ---
 2. Then, in the EC2 console, 'htop' command is used to monitor the CPU and memory utilization.
 
-![8 2](https://github.com/aungswanhtetpaing/AutoScalingLab/assets/135700688/ac2bff2f-6482-45fe-87fd-0e206aae25a7)
+![Image](./ProjectScreenshots/8.2.png)
 
-![8 2 2](https://github.com/aungswanhtetpaing/AutoScalingLab/assets/135700688/33e9b720-8317-463a-91bf-e17a8469404f) 
+![Image](./ProjectScreenshots/8.2.2.png)
 
 ---
 3. After installing the stress script, the CPU utilization is 'High' as shown below.
 
-![8 3](https://github.com/aungswanhtetpaing/AutoScalingLab/assets/135700688/3fff8597-3d18-44b8-a569-ac7187520d58)
-a8469404f)
+![Image](./ProjectScreenshots/8.3.png)
 
 ---
 4. Let's go back to CloudWatch and check the alarm. After a few minutes, the 'in alarm' stage is triggered.
 
-![8 4](https://github.com/aungswanhtetpaing/AutoScalingLab/assets/135700688/b8be29aa-8c0a-4b12-b1f3-2ed0f029482e)
+![Image](./ProjectScreenshots/8.4.png)
 
 ---
 5. And then, an SNS email is received that the EC2 Instance is Launched.
 
-![8 5](https://github.com/aungswanhtetpaing/AutoScalingLab/assets/135700688/8c626745-bd52-4612-a0aa-43a5db93c8b2)
+![Image](./ProjectScreenshots/8.5.png)
 
 ---
 6. Check the EC2 instances to verify that the EC2 instance is added.
 
-![8 6](https://github.com/aungswanhtetpaing/AutoScalingLab/assets/135700688/52d9e2b1-f55d-426d-b37b-38b2268a18bf)
+![Image](./ProjectScreenshots/8.6.png)
 
 ---
 
@@ -118,27 +117,26 @@ a8469404f)
 
 1. The stress task is killed with the process id in the ssh console.
 
-![9 1](https://github.com/aungswanhtetpaing/AutoScalingLab/assets/135700688/f292efa1-3f75-4f03-8622-cdae5ba6db5d)
-b2268a18bf)
+![Image](./ProjectScreenshots/9.1.png)
 
 ---
 2. Check the CloudWatch alarm and wait for the 'in alarm' stage.
 
-![9 2](https://github.com/aungswanhtetpaing/AutoScalingLab/assets/135700688/5eaeb3c9-01e6-4392-9d82-a46e179ea12b)
+![Image](./ProjectScreenshots/9.2.png)
 
 ---
 3. And then, an SNS email is received that the EC2 instance is 'Terminated'.
 
-![9 3](https://github.com/aungswanhtetpaing/AutoScalingLab/assets/135700688/8e38ff37-a263-452a-99b0-4db20cdb8c30)
+![Image](./ProjectScreenshots/9.3.png)
 
 ---
 4. Go to the EC2 instances and make sure that the EC2 instance is terminated.
 
-![9 4](https://github.com/aungswanhtetpaing/AutoScalingLab/assets/135700688/24625aa3-6253-4525-b6df-0dd18b6323c9)
+![Image](./ProjectScreenshots/9.4.png)
 
 ---
 ## IV. Deleting Resources
 
 Finally, CloudFormation Template is Deleted. 
 
-![10](https://github.com/aungswanhtetpaing/AutoScalingLab/assets/135700688/4220e33e-c582-441b-9516-ab4da9cbd567)
+![Image](./ProjectScreenshots/10.png)
